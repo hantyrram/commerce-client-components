@@ -1,8 +1,9 @@
 import { configure } from '@storybook/react';
 
 function loadStories() {
- require('../src/Button.stories.js');
+  require('../src/Button.stories.js');
   require('../src/EntityForm.stories.js');
+  require('../src/EForm.stories.js');
   // You can require as many stories as you need.
 }
 
