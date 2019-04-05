@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: EntityBrowser.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: EntityBrowser.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Used for tabular representation of data, supports pagination of data.
+ * props : {
+ *  entities : The entities to tabulate and paginate
+ *  follow : An object which represents a column value that is a Link to a path.
+ *             : { 
+ *                 pathname: REQUIRED! The pathname e.g. /users/:username
+ *                 paramName:  REQUIRED! The entity property  e.g. if entities contains array of users then setting this
+ *                          value to "username" will replace the :username on the path with "username".
+ *                          The column values of "username" will be a Link.
+ *                 entityName: REQUIRED! The name of the entity e.g. user, This is used as property of the location.state. 
+ *                 //entityName deprecated, all state will contain "entity" prop name
+ *               }
+ *  remove : [OPTIONAL] A function that will handle the delete button click event.
+ *  title: [OPTIONAL] The Title shown on top of the Entity Browser.
+ *  onAdd: [OPTIONAL] The handler for the add button.Which is used to add a new Entity.
+ * }
+ */
+
+import React,{Component} from 'react';
+import {Link,withRouter} from 'react-router-dom';
+import PropTypes from 'prop-types';
+import pluralize from 'pluralize';
+import "./EntityBrowser.css";
+
+
+class EntityBrowser extends Component{
+
+  constructor(props){
+  }
+  
+  async componentDidMount(){
+    this.initOnReadActionHandler.call(this);
+    let entities = await this.props.Entity.browse();
+    this.setState({entities: entities});
+  }
+
+  componentDidUpdate(){
+   this.initOnReadActionHandler.call(this);
+  }
+  
+  initOnReadActionHandler(){
+   let _self = this;
+   let rows = document.getElementsByTagName("tr");
+   for(let row of rows){
+     row.addEventListener('click',function(e){
+      if(e.eventPhase === Event.CAPTURING_PHASE &amp;&amp; e.target.tagName.toLowerCase() === 'td'){
+       if(e.target.className.includes("eb-entity-data")){
+           //row.attributes[0] is the saved entity on tr ,MUST do additional check on attributes[0].name === ebentity
+           //if additional attribute is added on the tr
+           let {entity}= JSON.parse(row.attributes["tr-entity"].value);
+           let href = `/${pluralize(_self.props.Entity.name.toLowerCase())}/${entity[_self.props.entityPrimaryKey]}`;
+           _self.props.history.push(href,{entity});
+        e.stopImmediatePropagation();
+       }
+      }
+     },true);
+   }
+  }
+
+  onEditActionHandler(entity,event){
+   event.preventDefault();
+   this.props.onEdit(entity);
+  }
+
+  onDeleteActionHandler(entity,event){
+    event.preventDefault();
+    this.props.onDelete(entity);
+  } 
+
+ render(){
+  let columnNames = [];
+  if(this.state.entities &amp;&amp; this.state.entities.length > 0){
+   columnNames.push('#');//number column
+   let sample = this.props.entities[0];//get a sample entity just to check the property names
+   columnNames = columnNames.concat(Object.getOwnPropertyNames(sample).map((samplePropName)=>{return samplePropName}));
+  }
+
+  let actions = [this.props.editor,this.props.deleter];
+  actions = actions.filter(a=>Boolean(a));
+
+  let actionStyleWidth = {
+    width: (actions.length > 0? 100 / actions.length : 0) + "%"
+  };
+
+  
+  //edit action
+  let edit = (entity)=>{
+   let to = {
+    pathname: `/${pluralize(this.props.entityName.toLowerCase())}/${entity[this.props.entityPrimaryKey]}/edit`,
+    state: {entity:entity}
+   }
+   return this.props.editor?&lt;Link style={actionStyleWidth} to={to} className="eb-action-edit">Edit&lt;/Link>:null
+  }
+  
+  let del = (entity)=>{
+   return this.props.deleter?&lt;a style={actionStyleWidth} href="" onClick={this.onDeleteActionHandler.bind(this,entity)} className="eb-action-delete">Delete&lt;/a>:null
+  }
+
+  return(     
+   &lt;div>
+    {/* {this.props.title? &lt;EntityBrowserTitle>{this.props.title}&lt;/EntityBrowserTitle>:null} */}
+    &lt;div id="main-actions-container"> &amp;nbsp;
+     {this.props.adder? &lt;Link to={{pathname:`/${pluralize(this.props.Entity.name.toLowerCase())}/add`}} className="eb-action-add" >+ Add New {this.props.entityName}&lt;/Link>:null}
+    &lt;/div>
+    {
+     this.props.entities &amp;&amp; this.props.entities.length > 0 ?
+     &lt;div id="table-container">
+      &lt;div id="table-wrapper">
+        &lt;table id="entitybrowser-table" >
+         &lt;thead>
+           &lt;tr>
+             {
+               columnNames.length > 0? columnNames.map((columnName,i)=>{
+                 return &lt;th key={i}>{columnName}&lt;/th>
+               }):null
+             }
+             &lt;th className="fixed-column" colSpan={actions.length} style={{minWidth:"80px"}}>Action&lt;/th>
+           &lt;/tr>
+         &lt;/thead>
+         &lt;tbody ref="ebTableTbody">
+           {
+             this.props.entities.map((entity,index)=>{
+              return &lt;tr key={index} tr-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
+                      &lt;td>{index + 1}&lt;/td> 
+                      {
+                        Object.getOwnPropertyNames(entity).map((entityFieldName,i)=>{
+                          return &lt;td key={i} className="eb-entity eb-entity-data">{entity[entityFieldName]}&lt;/td>
+                        })
+                      }
+                      {
+                        this.props.editor || this.props.onDelete?
+                         &lt;td className="fixed-column eb-entity eb-entity-action " style={{zIndex:"3"}} >
+                          {/* by convention edit path = read path + /edit */}
+                          {/* {this.props.editor?&lt;Link className="eb-action-edit" style={actionStyleWidth}  to={{pathname: `/${pluralize(this.props.entityName.toLowerCase())}/${entity[this.props.routingParamKey]}/edit`,state:{entity}}}>Edit&lt;/Link>:null} */}
+                          {edit(entity)}
+                          {del(entity)}
+                         &lt;/td>
+                        :null
+                      }
+                    &lt;/tr>
+             })
+           }
+          &lt;/tbody>
+        &lt;/table>
+      &lt;/div>
+     
+    &lt;/div>
+    : &lt;div>No available data&lt;/div>
+    }
+   
+   &lt;/div>
+  )
+ }
+}
+
+EntityBrowser.propTypes = {
+ /** The data to tabulate, the data will be shown in a Table */
+ entities: PropTypes.array,
+ /** The text that will be shown at the top */
+ title: PropTypes.string
+}
+export default withRouter(EntityBrowser);
+
+
+//entityname/:param/edit
+//entityname/:param
+// get each entity 
+// on row click = read</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bread.html">Bread</a></li><li><a href="EForm.html">EForm</a></li></ul><h3>Global</h3><ul><li><a href="global.html#EntityAddForm">EntityAddForm</a></li><li><a href="global.html#EntityReadForm">EntityReadForm</a></li><li><a href="global.html#EntityUpdateForm">EntityUpdateForm</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Apr 06 2019 02:01:31 GMT+0300 (Arabian Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
