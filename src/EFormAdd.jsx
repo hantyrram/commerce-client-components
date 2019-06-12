@@ -37,8 +37,8 @@ class EFormAdd extends Component{
   this.setState({[e.target.name]:e.target.value});
  }
 
- onSave(){
-  console.log('Saving', this.state);
+ onSave(formData){
+  this.props.onSave(formData);
  }
 
  render(){
@@ -48,7 +48,7 @@ class EFormAdd extends Component{
   return(
    <div id="eform-container">
     <EForm UISchema = {UISchema} onChange={this.onChange.bind(this)}/>
-    <button onClick={this.onSave.bind(this)}>Save</button>    
+    <button onClick={this.onSave.bind(this,this.state)}>Save</button>    
    </div>
    
   )

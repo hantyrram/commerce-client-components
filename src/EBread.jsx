@@ -58,6 +58,7 @@ const EBread = (props)=>{
  ]);
 
  const onSave = (entity) => {
+  console.log(entity);
   setEntities([...entities,entity]);
  }
 
