@@ -1,0 +1,1 @@
+make Components Entity Aware? or NOT

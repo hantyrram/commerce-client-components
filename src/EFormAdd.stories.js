@@ -1,6 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import EForm from './EForm';
+import EFormAdd from './EFormAdd';
 
 let UISchema = {
  name : {
@@ -42,6 +42,19 @@ let UISchema = {
  }
 }
 
+class Entity{
+ save(){
+  console.log('Saving',this);
+ }
 
-storiesOf('EForm', module)
-  .add('Show Sample Entity: "Product"', () => <EForm UISchema={UISchema}/>);
+ remove(){
+  console.log('Deleting',this);
+ }
+}
+
+function Product(){}
+
+Product.prototype = Entity;
+
+storiesOf('EFormAdd', module)
+  .add('Add Form for a Product Entity', () => <EFormAdd UISchema={UISchema} Entity={Product}/>);

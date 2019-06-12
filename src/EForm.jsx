@@ -12,6 +12,7 @@ import React, { Component } from 'react';
  */
 
 /**
+ * Entity Form or EForm is a component that provides dynamic UI for single Entity.
  * @constructor
  * @param {Object} props - React.props
  * @param {Object} props.UISchema - The UISchema that describes the elements of the form.
@@ -21,24 +22,29 @@ import React, { Component } from 'react';
 class EForm extends Component{
  render(){
   //get uischema
-  let { UISchema } = this.props;
+  let { UISchema,onChange, entity } = this.props;
   
   return(
-   <div>
+   <div id="eform-container">
     {
-     Object.keys(this.props.UISchema).map(k=>{
-      let element = UISchema[k];
+     Object.keys(this.props.UISchema).map( uiSchemaProp => { // key is the name of the property e.g. { username: {} } k = username
+      let element = UISchema[uiSchemaProp];
+      let value = entity && entity[uiSchemaProp]? entity[uiSchemaProp] : null;
+
+      let attributes = { ...element.attributes, onChange }; //add the onChange prop as additional attribute
+      value ? attributes.defaultValue = value:null;
+
       let children = null;
       //for select input element, add options as children
       if(element.el === "select" || (element.attributes && element.attributes.type === "select")){
-       children = element.options.map(o => <option value={o.value}>{o.text}</option>)
+       if(element.options && element.options.length > 0){
+        children = element.options.map((option,index) => <option key={index} value={option.value}>{option.text}</option>)
+       }
       }
-
       return <div>
-              { element.label ? <label htmlFor={k}>{element.label}</label> : null }
-              { React.createElement(element.el, element.attributes,children) }
-             </div>
-      
+              { element.label ? <label htmlFor={uiSchemaProp}>{element.label}</label> : null }
+              { React.createElement(element.el, attributes, children) }
+             </div>      
      })
     }
    </div>

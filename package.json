@@ -23,12 +23,18 @@
   "homepage": "https://github.com/hantyrram/commerce-client-components#readme",
   "devDependencies": {
     "@babel/core": "^7.3.4",
+    "@storybook/addon-actions": "^5.0.0",
     "@storybook/react": "^5.0.2",
-    "babel-loader": "^8.0.5"
+    "babel-loader": "^8.0.5",
+    "storybook": "^1.0.0",
+    "storybook-react-router": "^1.0.5"
   },
   "dependencies": {
+    "pluralize": "^7.0.0",
+    "prop-types": "^15.7.2",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
+    "react-router-dom": "^5.0.0",
     "styled-components": "^4.1.3"
   }
 }

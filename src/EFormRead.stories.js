@@ -1,6 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import EForm from './EForm';
+import EFormRead from './EFormRead';
 
 let UISchema = {
  name : {
@@ -43,5 +43,22 @@ let UISchema = {
 }
 
 
-storiesOf('EForm', module)
-  .add('Show Sample Entity: "Product"', () => <EForm UISchema={UISchema}/>);
+class Entity{
+ save(){
+  console.log('Saving',this);
+ }
+
+ remove(){
+  console.log('Deleting',this);
+ }
+}
+
+
+class Permission extends Entity{}
+
+let permission = new Permission();
+permission.name = "permission_name";
+permission.label = "permission_label";
+permission.category = "WineID";
+storiesOf('EFormRead', module)
+  .add('View Permission Entity', () => <EFormRead UISchema={UISchema} Entity={Permission} entity={permission} save delete/>);
