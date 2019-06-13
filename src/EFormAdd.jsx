@@ -27,13 +27,16 @@ class EFormAdd extends Component{
   //find an element with default value,then set it
   this.state = Object.getOwnPropertyNames(props.UISchema).reduce(function(acc,propName){
    let defaultValue = props.UISchema[propName].attributes.defaultValue;
-   defaultValue ? acc[propName] = defaultValue: null; //mutate acc
+   defaultValue ? acc[propName] = defaultValue: ""; //mutate acc
    return acc;
   },{});
   
  }
 
  onChange(e){
+  console.log(e.target.name);
+  console.log(e.target.value);
+  
   this.setState({[e.target.name]:e.target.value});
  }
 

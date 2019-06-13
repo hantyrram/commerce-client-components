@@ -22,7 +22,7 @@ import React, { Component } from 'react';
 class EForm extends Component{
  render(){
   //get uischema
-  let { UISchema,onChange, entity } = this.props;
+  let { UISchema,onChange,entity } = this.props;
   
   return(
    <div id="eform-container">

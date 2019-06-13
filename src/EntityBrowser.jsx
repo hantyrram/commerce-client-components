@@ -24,6 +24,7 @@ import pluralize from 'pluralize';
 import "./EntityBrowser.css";
 
 
+
 class EntityBrowser extends Component{
 
   constructor(props){
@@ -101,9 +102,16 @@ class EntityBrowser extends Component{
  renderColumnHeaders(){
   let columnNames = [];
   if(this.props.entities && this.props.entities.length > 0){
-   columnNames.push('#');//number column
-   let sample = this.props.entities[0];//get a sample entity just to check the property names
-   columnNames = columnNames.concat(Object.getOwnPropertyNames(sample).map((samplePropName)=>{return samplePropName}));
+    if(this.props.UISchema){
+     columnNames = ["#",...Object.getOwnPropertyNames(this.props.UISchema).map(prop=>this.props.UISchema[prop].label || prop)];
+    }
+    // OLD Code: this makes it possible not TO use UISchema,just by using the entity sample,problem is,when a new entity 
+    // with a different order of properties is added to entities. 
+    // else{ 
+    //  let sample = this.props.entities[0];//get a sample entity just to check the property names
+    //  columnNames = ["#", ...Object.getOwnPropertyNames(sample).map((samplePropName)=>{return samplePropName})];
+    // }
+
   }
   
   let [actions] = this.actionsAndActionStyleWidth;
@@ -124,12 +132,12 @@ class EntityBrowser extends Component{
           <tr id={`eb-row-${index}`} className="eb-row" key={index} tr-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
            <td className="eb-data">{index + 1}</td> 
            {
-             Object.getOwnPropertyNames(entity).map((entityFieldName,i)=>{
-               return <td key={i} className="eb-entity eb-entity-data">{entity[entityFieldName]}</td>
+             Object.getOwnPropertyNames(this.props.UISchema).map((col,i)=>{
+               return <td key={i} className="eb-entity eb-entity-data">{entity[col]}</td>
              })
            }
            {
-             this.props.editor || this.props.onDelete?
+             this.props.onEdit || this.props.onDelete?
               <td className="fixed-column eb-entity eb-entity-action "  >
               {this.renderActions(entity)}
               </td>
@@ -170,9 +178,7 @@ class EntityBrowser extends Component{
   return(     
    <div>
     <div id="main-actions-container"> &nbsp;
-     {/* BREAD should handle adder trigger no need here in browser */}
-     {/* {this.props.adder? <Link to={{pathname:`/${pluralize(this.props.Entity.name.toLowerCase())}/add`}} className="eb-action-add" >+ Add New {this.props.entityName}</Link>:null} */}
-     {/* <Link to="/users/add" >Add</Link> */}
+     
     </div>
     {
      this.props.entities && this.props.entities.length > 0 ?
@@ -203,21 +209,29 @@ class EntityBrowser extends Component{
 EntityBrowser.propTypes = {
  /** The data to tabulate, the data will be shown in a Table */
  entities: PropTypes.array,
+ /*
+  * Uses the UISchema's properties index as bases in arranging the columns. Uses labels as column labels, these
+  * are the only required properties.
+  */
+ UISchema: PropTypes.object,
  /**
   * The onRead handler function.
   * 
-  * @prop {function} props.onRead - Triggered when a row is clicked.
+  * @prop {function} onRead - Triggered when a row is clicked.
+  * @param {Object} entity
   */
  onRead: PropTypes.func,
  /**
   * Triggered when the edit action button is clicked.
-  * @param {Object} entity - EBrowser will pass the entity to edit.
+  * @prop {function} [onEdit] - EBrowser will pass the entity to edit.
+  * @param {Object} entity
   */
  onEdit: PropTypes.func,
 
  /**
   * Triggered when the delete action button is clicked.
-  * @param {Object} entity - EBrowser will pass the entity to delete.
+  * @prop {function} [onDelete] - EBrowser will pass the entity to delete.
+  * @param {Object} entity 
   */
  onDelete: PropTypes.func,
 
