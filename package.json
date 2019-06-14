@@ -1,5 +1,5 @@
 {
-  "name": "commerce-client-components",
+  "name": "react-components",
   "version": "1.0.0",
   "description": "Components for the Hantyr Commerce Client",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hantyrram/commerce-client-components.git"
+    "url": "git+https://github.com/hantyrram/react-components.git"
   },
   "keywords": [
     "commerce",
@@ -18,9 +18,9 @@
   "author": "ronskielog",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hantyrram/commerce-client-components/issues"
+    "url": "https://github.com/hantyrram/react-components/issues"
   },
-  "homepage": "https://github.com/hantyrram/commerce-client-components#readme",
+  "homepage": "https://github.com/hantyrram/react-components#readme",
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@storybook/addon-actions": "^5.0.0",

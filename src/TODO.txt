@@ -1,1 +1,1 @@
-Entity Browser should Retain Column Sequence regardless of how entity's properties are arranged.
+Add Products Feature, Use Bread on the Feature

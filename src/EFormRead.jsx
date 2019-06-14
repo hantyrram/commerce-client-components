@@ -46,19 +46,22 @@ class EFormRead extends Component{
   console.log(this.state);
  }
 
- onSave(){
-  console.log('Saving', this.state);
+ onSaveMiddleware(event){
+  console.log('onSaveMiddlware called');
+  this.props.onSave(this.state);
+
  }
 
- onDelete(){
-  console.log('Deleting', this.state);
+ onDeleteMiddleware(event){
+  console.log('onDeleteMiddlware called');
+  this.props.onDelete(this.state);
  }
 
  render(){
   //get uischema
   let { UISchema, Entity, entity } = this.props;
-  let save = this.props.save? <button id="eformread-save" onClick={this.onSave.bind(this)}>Save</button> :null;
-  let del = this.props.delete? <button id="eformread-delete" onClick={this.onDelete.bind(this)}>Delete</button> :null;
+  let save = this.props.onSave? <button id="eformread-save" onClick={this.onSaveMiddleware.bind(this)}>Save</button> :null;
+  let del = this.props.onDelete? <button id="eformread-delete" onClick={this.onDeleteMiddleware.bind(this)}>Delete</button> :null;
   return(
    <div id="eform-container">
     <EForm UISchema = {UISchema} entity={entity} onChange={this.onChange.bind(this)}/>
