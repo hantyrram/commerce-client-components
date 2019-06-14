@@ -1,7 +1,19 @@
 
+.boxed{
+ border: 1px solid #ece6e6;
+}
+
+.action-button{
+ border: none;
+ padding: .5em;
+ font-weight: bolder;
+ color: white;
+ background-color: #218edc;
+ margin:.5em;
+}
 
 .ebrowser {
- border: 1px solid #ece6e6;
+
  padding: .5em;
  font-family: sans-serif;
  color:#727976;

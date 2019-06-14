@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import './styles/eform.css';
 
 
 /**
@@ -25,7 +26,7 @@ class EForm extends Component{
   let { UISchema,onChange,entity } = this.props;
   
   return(
-   <div id="eform-container">
+   <div id="eform-container" className="eform boxed">
     {
      Object.keys(this.props.UISchema).map( uiSchemaProp => { // key is the name of the property e.g. { username: {} } k = username
       let element = UISchema[uiSchemaProp];
@@ -41,7 +42,7 @@ class EForm extends Component{
         children = element.options.map((option,index) => <option key={index} value={option.value}>{option.text}</option>)
        }
       }
-      return <div>
+      return <div className="eform-inputgroup">
               { element.label ? <label htmlFor={uiSchemaProp}>{element.label}</label> : null }
               { React.createElement(element.el, attributes, children) }
              </div>      

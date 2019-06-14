@@ -60,8 +60,8 @@ class EFormRead extends Component{
  render(){
   //get uischema
   let { UISchema, Entity, entity } = this.props;
-  let save = this.props.onSave? <button id="eformread-save" onClick={this.onSaveMiddleware.bind(this)}>Save</button> :null;
-  let del = this.props.onDelete? <button id="eformread-delete" onClick={this.onDeleteMiddleware.bind(this)}>Delete</button> :null;
+  let save = this.props.onSave? <button className="action-button" id="eformread-save" onClick={this.onSaveMiddleware.bind(this)}>Save</button> :null;
+  let del = this.props.onDelete? <button className="action-button" id="eformread-delete" onClick={this.onDeleteMiddleware.bind(this)}>Delete</button> :null;
   return(
    <div id="eform-container">
     <EForm UISchema = {UISchema} entity={entity} onChange={this.onChange.bind(this)}/>

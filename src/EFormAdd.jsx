@@ -51,7 +51,7 @@ class EFormAdd extends Component{
   return(
    <div id="eform-container">
     <EForm UISchema = {UISchema} onChange={this.onChange.bind(this)}/>
-    <button onClick={this.onSave.bind(this,this.state)}>Save</button>    
+    <button className="action-button" onClick={this.onSave.bind(this,this.state)}>Save</button>    
    </div>
    
   )

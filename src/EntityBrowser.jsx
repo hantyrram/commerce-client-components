@@ -177,7 +177,7 @@ class EntityBrowser extends Component{
 
  render(){
   return(     
-   <div className="ebrowser">
+   <div className="ebrowser boxed">
     <div id="main-actions-container"> &nbsp;
      
     </div>
