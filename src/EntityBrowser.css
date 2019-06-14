@@ -1,13 +1,13 @@
-#table-container{
+/* #table-container{
  position:relative;
  overflow: hidden;
  width:98%;
-}
+} */
 
-#table-wrapper{
+/* #table-wrapper{
  overflow-x: auto;
  width: 95%;
-}
+} */
 
 #main-actions-container{
  display: flex;
@@ -31,26 +31,25 @@
 }
 
 #main-actions-container .eb-action-add:hover{
- background-color:#e3f9e8;
  text-shadow: 0px 0px .5px, .5px .5px 1px #1e7a08;
 }
 
-#entitybrowser-table{
+/* #entitybrowser-table{
  border-collapse: collapse;
-}
+} */
 
-#entitybrowser-table{
+/* #entitybrowser-table{
  min-width: 95%;
-}
-#entitybrowser-table tbody tr:hover{
+} */
+/* #entitybrowser-table tbody tr:hover{
  background-color:grey;
  color:white;
-}
+} */
 
 #entitybrowser-table tbody tr td{
  white-space: nowrap;
  cursor: default;
- padding: 1em;
+ padding: .5em;
 }
 
 /** # column*/
@@ -75,7 +74,7 @@
 
 .fixed-column{
  position: absolute;
- background-color: white;
+ /* background-color: white; */
  top:auto;
  right:-15;
  min-width: 50px;

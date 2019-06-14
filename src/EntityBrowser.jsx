@@ -22,6 +22,7 @@ import {Link,withRouter,BrowserRouter as Router} from 'react-router-dom';
 import PropTypes from 'prop-types';
 import pluralize from 'pluralize';
 import "./EntityBrowser.css";
+import './styles/index.css';
 
 
 
@@ -74,7 +75,7 @@ class EntityBrowser extends Component{
 
  renderTitle(){
   console.log(this.props.title);
-  return this.props.title ? <caption className="table-title">{this.props.title}</caption> : null
+  return this.props.title ? <caption className="table-caption">{this.props.title}</caption> : null
  }
 
  /**
@@ -176,7 +177,7 @@ class EntityBrowser extends Component{
 
  render(){
   return(     
-   <div>
+   <div className="ebrowser">
     <div id="main-actions-container"> &nbsp;
      
     </div>
@@ -184,9 +185,12 @@ class EntityBrowser extends Component{
      this.props.entities && this.props.entities.length > 0 ?
      <div id="table-container">
       <div id="table-wrapper">
-        <table id="entitybrowser-table" >
-         {this.renderTitle.bind(this)()}
-         <thead>
+        <div className = "ebrowser-title">
+          {this.renderTitle.bind(this)()}
+          <a href="#" id="ebrowser-action-add">+</a>
+        </div>          
+        <table id="entitybrowser-table" >       
+         <thead>          
           {this.renderColumnHeaders.bind(this)()}
          </thead>
          <tbody ref="ebTableTbody">
