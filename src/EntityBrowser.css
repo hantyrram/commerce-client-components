@@ -74,7 +74,7 @@
 
 .fixed-column{
  position: absolute;
- /* background-color: white; */
+ background-color: white;
  top:auto;
  right:-15;
  min-width: 50px;

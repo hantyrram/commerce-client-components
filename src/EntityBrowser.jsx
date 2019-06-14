@@ -187,7 +187,7 @@ class EntityBrowser extends Component{
       <div id="table-wrapper">
         <div className = "ebrowser-title">
           {this.renderTitle.bind(this)()}
-          <a href="#" id="ebrowser-action-add">+</a>
+          <a href="#" id="ebrowser-action-add">Add New {this.props.title} +</a>
         </div>          
         <table id="entitybrowser-table" >       
          <thead>          
