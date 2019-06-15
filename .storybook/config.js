@@ -11,6 +11,7 @@ function loadStories() {
   require('../src/EFormRead.stories.js');
   require('../src/EntityBrowser.stories.js');
   require('../src/EBread.stories.js');
+  require('../src/Feature.stories.js');
   // You can require as many stories as you need.
 }
 addDecorator(StoryRouter());

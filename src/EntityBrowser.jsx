@@ -74,7 +74,6 @@ class EntityBrowser extends Component{
   } 
 
  renderTitle(){
-  console.log(this.props.title);
   return this.props.title ? <caption className="table-caption">{this.props.title}</caption> : null
  }
 
@@ -156,10 +155,10 @@ class EntityBrowser extends Component{
 
   let actionStyleWidth = this.actionsAndActionStyleWidth[1];
   let edit = ()=>{
-   return this.props.onEdit?<a key="edit" style={actionStyleWidth} href=""  onClick={this.onEditMiddleware.bind(this,entity)} className="eb-action-edit">Edit</a>:null
+   return this.props.onEdit?<a key="edit" style={actionStyleWidth} href=""  onClick={this.onEditMiddleware.bind(this,entity)} className="ebrowser-action action-edit" >Edit</a>:null
   }
   let del = ()=>{
-   return this.props.onDelete?<a key="delete" style={actionStyleWidth} href="" onClick={this.onDeleteMiddleware.bind(this,entity)} className="eb-action-delete">Delete</a>:null
+   return this.props.onDelete?<a key="delete" style={actionStyleWidth} href="" onClick={this.onDeleteMiddleware.bind(this,entity)} className="ebrowser-action action-delete">Delete</a>:null
   }
 
   return [edit(),del()];
@@ -202,7 +201,7 @@ class EntityBrowser extends Component{
       </div>
      
     </div>
-    : <div>No available data</div>
+    : <div style={{textAlign:"center"}}>No available data</div>
     }
    
    </div>

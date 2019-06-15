@@ -65,6 +65,10 @@
  background-color:#f3f4f9;
  color:#312f2f;
 }
+/* redundant to include action header  */
+.ebrowser thead th {
+ background-color:#f3f4f9;
+}
 
 .ebrowser table th,td{
  text-align:left;
@@ -73,4 +77,19 @@
 
 .ebrowser table td{
  font-size: 12px;
+}
+
+.ebrowser .ebrowser-action{
+ text-decoration: none;
+ padding:.5em;
+ color:black;
+}
+
+.ebrowser .action-edit{
+ background-color:#b2d0ef;
+ margin-right:.4em;
+}
+
+.ebrowser .action-delete{
+ background-color:#f16f6f;
 }

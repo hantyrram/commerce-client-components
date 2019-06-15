@@ -11,24 +11,20 @@ const EBread = (props)=>{
 
  const onSave = (entity) => {
   console.log(entity);
-  setEntities([...entities,entity]);
+  setEntities([...entities,entity]);//update to immediately reflect on entitybrowser
+  props.onAdd(entity);//delegate
  }
 
- const onEdit = (entity)=>console.log("Editing Entity",entity);
-
- const onDelete = (entity)=> console.log("Deleting Entity",entity);
-
- const onRead = (entity)=>console.log("Reading Entity",entity);
-
+ 
  return(
   <div>
    <Router>
-   <Link to="/users/add" >Add</Link>
+   <Link to={props.addPath} >Add</Link>
    <Switch>
-    <Route path='/users/add' render={()=><EFormAdd UISchema={props.UISchema} onSave={onSave} />} /> 
+    <Route path={props.addPath} render={()=><EFormAdd UISchema={props.UISchema} onSave={onSave} />} /> 
    </Switch>
    
-   <EntityBrowser UISchema={props.UISchema} title="Users" entities={entities} onRead={onRead} onEdit={onEdit} onDelete={onDelete}/>
+   <EntityBrowser UISchema={props.UISchema} title="Users" entities={props.entities}  onRead={props.onRead} onEdit={props.onEdit} onDelete={props.onDelete}/>
   </Router>
   </div>
  )
