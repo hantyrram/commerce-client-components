@@ -28,7 +28,7 @@ class EFormRead extends Component{
   super(props);
   //find an element with default value,then set it
   this.state = {};
-
+  console.log('EFormRead props',props);
   if(props.entity){
    this.state = Object.getOwnPropertyNames(props.entity).reduce(function(acc,propName){
     acc[propName] = props.entity[propName];
@@ -36,6 +36,7 @@ class EFormRead extends Component{
    }, this.state);
   }
   
+
 
  }
 

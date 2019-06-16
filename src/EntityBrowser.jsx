@@ -31,6 +31,7 @@ class EntityBrowser extends Component{
   constructor(props){
    super(props);
    this.state = {};
+   console.log(props);
    this.renderActions = this.renderActions.bind(this);
   }
   
@@ -56,6 +57,8 @@ class EntityBrowser extends Component{
            // let href = `/${pluralize(_self.props.Entity.name.toLowerCase())}/${entity[_self.props.entityPrimaryKey]}`;
            // _self.props.history.push(href,{entity});
            _self.props.onRead(entity);
+           // console.log(_self.props.readPath.replace(":id",entity._id));
+           // _self.props.history.push(_self.props.readPath.replace(":id",entity._id),{entity});
         e.stopImmediatePropagation();
        }
       }

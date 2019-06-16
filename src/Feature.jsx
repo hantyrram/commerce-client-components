@@ -22,13 +22,28 @@
  // } from '../requesters';
  
  import samples from './sample_entities/Products.json';
- import schema from './schemas/ProductUISchema';
+ import UISchema from './schemas/ProductUISchema';
  // const fetchproducts = Promise.resolve(products);
 
  function Products(props){
 
   const [products,setProducts] = useState([]);
-  
+  const onAdd = (entity)=>console.log('Adding Entity',entity);
+  const onEdit = (entity)=>console.log('Editing Entity',entity);
+  const onRead = (entity)=>console.log('Reading Entity',entity);
+  const onDelete = (entity)=>console.log('Deleting Entity',entity);
+
+  const ADD_PRODUCT_PATH = "/products/add";
+  const READ_PRODUCT_PATH = "/products/:id";
+  const EBreadConfig = {
+   UISchema,
+   ...{onAdd,onEdit,onRead,onDelete},
+   addPath: ADD_PRODUCT_PATH,
+   readPath: READ_PRODUCT_PATH,
+   entities:products,
+   title: "Products"
+  };
+
   useEffect(()=>{
    //emitates api call fetchproducts
    Promise.resolve(samples).then(p=>{
@@ -36,14 +51,11 @@
    })
   });
  
-  const onAdd = (entity)=>console.log('Adding Entity',entity);
-  const onEdit = (entity)=>console.log('Editing Entity',entity);
-  const onRead = (entity)=>console.log('Reading Entity',entity);
-  const onDelete = (entity)=>console.log('Deleting Entity',entity);
 
   return (
    <div className="feature">
-    <EBread UISchema={schema} {...{onAdd,onEdit,onRead,onDelete}} addPath="/products/add" entities={products} title="Products"/>
+    {/* <EBread UISchema={schema} {...{onAdd,onEdit,onRead,onDelete}} addPath={ADD_PRODUCT_PATH} entities={products} title="Products"/> */}
+    <EBread {...EBreadConfig}/>
    </div>
   );
  
