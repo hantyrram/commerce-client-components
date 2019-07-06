@@ -1,5 +1,5 @@
 import EBrowser from './EBrowser.jsx';
 
-export {
+export default {
    EBrowser
 }
