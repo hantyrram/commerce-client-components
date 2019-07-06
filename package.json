@@ -1,6 +1,6 @@
 {
   "name": "react-components",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Components for the Hantyr Commerce Client",
   "main": "index.js",
   "scripts": {
