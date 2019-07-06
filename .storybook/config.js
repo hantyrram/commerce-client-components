@@ -9,7 +9,7 @@ function loadStories() {
 //   require('../src/EForm.stories.js');
 //   require('../src/EFormAdd.stories.js');
 //   require('../src/EFormRead.stories.js');
-  require('../src/EBrowser.stories.js');
+  require('../src/EBrowser.stories');
 //   require('../src/EBread.stories.js');
 //   require('../src/Feature.stories.js');
   // You can require as many stories as you need.

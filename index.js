@@ -1,1 +1,5 @@
-module.exports.EBrowser = require('./EBrowser')
+import EBrowser from './EBrowser.jsx';
+
+export {
+   EBrowser
+}

@@ -1,5 +1,5 @@
 {
-  "name": "react-components",
+  "name": "@hantyr/react-components",
   "version": "1.0.1",
   "description": "Components for the Hantyr Commerce Client",
   "main": "index.js",
