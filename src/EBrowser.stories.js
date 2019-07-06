@@ -30,7 +30,24 @@ const onAdd = ()=>{
    })
 }
 const onEdit = (entity)=>console.log(entity);
-const onDelete = (entity)=>console.log(entity);
+const onDelete = (entity)=>{
+   console.log('Deleting');
+   return new Promise((res,rej)=>{
+      let t = setTimeout(()=>{
+         rej(true);
+         clearTimeout(t);
+      },5000);
+   });
+}
+
+const actions = [
+   {
+      name : 'edit'
+   },
+   {
+      name: 'delete'
+   }
+]
 
 storiesOf('EBrowser', module)
   .add('EBrowser',() => 
@@ -44,6 +61,7 @@ storiesOf('EBrowser', module)
          onEdit={onEdit}
          onDelete={onDelete}
          searchable
+         actions={actions}
          // maxRowPerPage
          // maxRowExceeded
          searchableFields={searchableFields}

@@ -9,6 +9,7 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
+import './EBrowser.css';
 
 const ComponentContainer = styled.div`
    padding: 1em;
@@ -34,6 +35,7 @@ const Table = styled.table`
  // margin-bottom: .5em;
  & tr {
   border-top: 1px solid #d6cccc;
+  text-align:left;
  }
  & tr:hover{
   background-color:#f3ffee;
@@ -56,9 +58,6 @@ const ThFixed = styled(Th)`
  text-align:center;
 `;
 
-const Tr= styled.tr`
- text-align:left;
-`;
 
 const Td = styled.td`
  white-space:nowrap;
@@ -111,8 +110,19 @@ const SearchAddPanel = styled.div`
  align-items:normal;
 `;
 
+const rowDeletingStyle = {
+   filter: "opacity(0.5)",
+   backgroundColor: "#fdeaea",
+}
 
 
+
+/**
+ * A Search component for the EBrowser.
+ * 
+ * @author Ronaldo Ramano <rongrammer@hotmail.com>
+ * @version 0.0.1
+ */
 function EBrowserSearch({searchableFields,data,onResult}){
    const onChange = (e)=>{
       let searchStr = e.target.value;
@@ -173,8 +183,19 @@ function TableHeader({columnNames,withActionColumn,actionColumnWidth,numbered}){
    )
 }
 
+/**
+ * An entity browser displays a list of entities.
+ * 
+ * @author Ronaldo Ramano <rongrammer@hotmail.com>
+ * @version 0.0.1
+ */
 function EBrowser(props){
-
+   const ACTION_TYPE = {
+      DELETE: 'delete',
+      ADD: 'add',
+      EDIT: 'edit',
+      SEARCH: 'search'
+   }
    //maxRowExceededBehaviour enum
    const MREB = {
       PAGINATE: 'paginate',
@@ -208,102 +229,126 @@ function EBrowser(props){
 
   let [state, dispatch] = useReducer((state,action)=>{
    switch(action.type){
-      case 'SEARCH': return { ...state, searchResult : action.searchResult  }
-      case 'DELETE': return { ...state , entities: action.entities }
-      case 'ADD' : return { ...state, entities: [ action.entity, ...state.entities ] }//push 
+      case ACTION_TYPE.SEARCH: return { ...state, searchResult : action.searchResult  }
+      
+      case ACTION_TYPE.DELETE: {
+         //delete failed,reverse
+         let splicedEntities = Object.assign([],[...state.entities]);
+         if(action.reversal){
+            splicedEntities.splice(action.entityIndex,0,action.entity);//insert on original position
+         }else{
+            splicedEntities.splice(action.entityIndex,1);//delete
+         }
+         return {...state, entities: splicedEntities};
+      }
+      case ACTION_TYPE.ADD : {
+         return { ...state, entities: [ action.entity, ...state.entities ] }//push 
+      }
       default:  return {...state}
    }
   }, initialState);
 
-  const onSearchResult = searchResult => {
-   dispatch({ type: 'SEARCH', searchResult });
-  }
+   const onSearchResult = searchResult => {
+      dispatch({ type: ACTION_TYPE.SEARCH, searchResult });
+   }
 
  
-  function initOnReadActionHandler(){
+   function initOnReadActionHandler(){
    if(props.onRead){
-     let rows = document.getElementsByTagName("tr");
-     for(let row of rows){
-       row.addEventListener('click',function(e){
-        if(e.eventPhase === Event.CAPTURING_PHASE && e.target.tagName.toLowerCase() === 'td'){
+      let rows = document.getElementsByTagName("tr");
+      for(let row of rows){
+         row.addEventListener('click',function(e){
+         if(e.eventPhase === Event.CAPTURING_PHASE && e.target.tagName.toLowerCase() === 'td'){
          if(e.target.className.includes("ebrowser-entity-data")){
-             let {entity}= JSON.parse(row.attributes["row-entity"].value);
-             props.onRead(entity);
-          e.stopImmediatePropagation();
+               let {entity}= JSON.parse(row.attributes["row-entity"].value);
+               props.onRead(entity);
+               e.stopImmediatePropagation();
          }
-        }
-       },true);
-     }
-    }
-  }
+         }
+         },true);
+      }
+      }
+   }
+
+   /**Intercepts click event of the edit button, serves as a proxy to props.onEdit*/
+   const onEditClickHandler = async (entity,e)=>{
+      console.log('Editing ',entity);
+   }
+
+   /**Intercepts click event of the delete button, serves as a proxy to props.onDelete*/
+   const onDeleteClickHandler = async (entity,index,rowId,e)=>{
+      //cache entity for dispatching DELETE action with reversal
+      let cacheEntity = Object.assign({},entity); 
+      dispatch({type: ACTION_TYPE.DELETE, entityIndex:index});//delete immediately
+      try {
+         await props.onDelete(entity);
+      } catch (error) {
+         console.log('Error caught deleting: ',entity);
+         dispatch({ type:ACTION_TYPE.DELETE,entityIndex:index, reversal:true, entity: cacheEntity });
+      }
+   }
 
 
-  const renderHeaders = ()=>{
-   let headers = Object.keys(props.uischema);
-   if(state.entities && state.entities.length > 0){
-   return( 
-    <thead>
-     {
-      props.numbered ? <Th>#</Th> : null
-     }
-     {
-      headers.map((header,i)=> <Th key={i}>{header}</Th>)
-     }
-     { props.onEdit || props.onDelete ?<ThFixed className="ThFixed" colSpan="2">Action</ThFixed> : null}
-    </thead>     
-    )
-    }
-  }
 
-  const renderRows = ()=>{
+   const renderRows = ()=>{
    let activeEntities = state.searchResult.length > 0? state.searchResult : state.entities;
-   return activeEntities && activeEntities.length> 0 ? activeEntities.map((entity,index)=>
-           <Tr id={`ebrowser-row-${index}`} className="ebrowser-row" key={index} row-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
-            <Td className="ebrowser-entity-data">{index + 1}</Td> 
-            {
-              Object.getOwnPropertyNames(props.uischema).map((uiSchemaProp,i)=>{
-                let transform = props.uischema[uiSchemaProp].transform;
-                let data = entity[uiSchemaProp];
-                let cellValue = data;
-                if(data instanceof Array){
-                 // just an ellipse,indicating that the value is an array
-                 // perhaps will improve on this.
-                 cellValue = <i>{`[...${uiSchemaProp}]`}</i>
-                }else{
-                 cellValue = data && transform? transform(data): data;
-                }
+   return activeEntities && activeEntities.length> 0 ? activeEntities.map((entity,index)=> {
+      let rowId = `ebrowser-row-${index}`; //tr's id attribute
+      return ( //mapped
+         <tr id={rowId} className="ebrowser-row" key={index} row-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
+         <Td className="ebrowser-entity-data">{index + 1}</Td> 
+         {
+            Object.getOwnPropertyNames(props.uischema).map((uiSchemaProp,i)=>{
+               let transform = props.uischema[uiSchemaProp].transform;
+               let data = entity[uiSchemaProp];
+               let cellValue = data;
+               if(data instanceof Array){
+               // just an ellipse,indicating that the value is an array
+               // perhaps will improve on this.
+                  cellValue = <i>{`[...${uiSchemaProp}]`}</i>
+               }else{
+                  cellValue = data && transform? transform(data): data;
+               }
 
-                // if(data && transform){
-                //  data = transform(data);
-                // }
-                return <Td key={i} className="ebrowser-entity-data">{cellValue}</Td>
-              })
-            }
-            {
-              props.actions && props.actions.length > 0? <>
-              <DummyTd className="DummyTd" /> 
-               <TdFixed className="TdFixed">
-                {
-                 props.actions.map(action => {
-                  if(typeof action.icon === 'string'){
-                   switch(action.icon){
-                    case 'edit': return <StyledEditIcon />;
-                    case 'delete': return <StyledDeleteIcon />;
-                    default : return <button>{action.label}</button>;
-                   }
+               return <Td key={i} className="ebrowser-entity-data">{cellValue}</Td>
+            })
+         }
+         {
+            props.actions && props.actions.length > 0? <>
+            <DummyTd className="DummyTd" /> 
+            <TdFixed className="TdFixed">
+               {
+               props.actions.map(action => {
+
+               switch(action.name){
+                  case 'edit': {
+                     if(action.ui){
+                        let UI = action.ui;
+                        return <UI onClick={onEditClickHandler.bind(null,entity)} />;
+                     }
+                     return <StyledEditIcon onClick={onEditClickHandler.bind(null,entity)}/>;
                   }
-                  return action.icon;
-                 })
-                }
-                {/* { props.onEdit ? <StyledEditIcon /> : null}
-                { props.onDelete ? <StyledDeleteIcon /> : null} */}
-               </TdFixed>
-              </>:null
-             }
-          </Tr>
+                  case 'delete': {
+                     if(action.ui){
+                        let UI = action.ui;
+                        return <UI onClick={onDeleteClickHandler.bind(null,entity,index,rowId)} />;
+                     }
+                     return <StyledDeleteIcon onClick={onDeleteClickHandler.bind(null,entity,index,rowId)}/>;
+                  }
+                  default : return <button>{action.name}</button>;
+                  }
+               })
+               }
+            </TdFixed>
+            </>:null
+            }
+         </tr>
+      )
+   }
+           
          )  //.map
          :null
-  }
+   }
 
   /**
    * Modify Fixed Column / Action Column. 
@@ -359,7 +404,7 @@ function EBrowser(props){
     <TableContainer>
       <TableWrapper >
        <Table>
-         <TableHeader columnNames={Object.keys(props.uischema)} numbered /> 
+         <TableHeader columnNames={Object.keys(props.uischema)} numbered withActionColumn={props.actions && props.actions.length > 0}/> 
          <tbody>
          {
             renderRows()
@@ -389,7 +434,7 @@ EBrowser.propTypes = {
   * @type {function}
   * @param {Object} entity The entity that will be affected by a particular action.
   */
- actionsProvider: PropTypes.func,
+ actions: PropTypes.func,
 
  /*
   * Uses the UISchema's properties index as bases in arranging the columns. Uses labels as column labels, these
@@ -474,11 +519,13 @@ EBrowser.propTypes = {
  * An object that defines an action that can be peformed on the EBrowser.
  * 
  * @typedef  {Object} EBrowser.action 
- * @property {String} type The action name valid values are 'delete','edit','add'
+ * @property {String} name The action name valid values are 'delete','edit','add'
  * @property {String|React.Component|React.Element|undefined} ui The string or component that the user interacts with. 
  * If value is a string, it is display as simple button without border. If ui is undefined EBrowser will use the 
  * default ui for the given type.
  * 
  */
+
+
 
 export default EBrowser;

@@ -1,3 +1,0 @@
-Add Products Feature, Use Bread on the Feature...Test
-Add prop docs to EBread, addPath was added as prop.
-Add readPath as prop as well
