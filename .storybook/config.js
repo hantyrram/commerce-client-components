@@ -4,15 +4,16 @@ import StoryRouter from 'storybook-react-router'; //React Router Wrapper to be a
 
 
 function loadStories() {
-  require('../src/Button.stories.js');
-  require('../src/EntityForm.stories.js');
-  require('../src/EForm.stories.js');
-  require('../src/EFormAdd.stories.js');
-  require('../src/EFormRead.stories.js');
-  require('../src/EntityBrowser.stories.js');
-  require('../src/EBread.stories.js');
-  require('../src/Feature.stories.js');
+//   require('../src/Button.stories.js');
+//   require('../src/EntityForm.stories.js');
+//   require('../src/EForm.stories.js');
+//   require('../src/EFormAdd.stories.js');
+//   require('../src/EFormRead.stories.js');
+  require('../src/EBrowser.stories.js');
+//   require('../src/EBread.stories.js');
+//   require('../src/Feature.stories.js');
   // You can require as many stories as you need.
 }
-addDecorator(StoryRouter());
+
+// addDecorator(StoryRouter());
 configure(loadStories, module);

@@ -22,7 +22,8 @@ let UISchema = {
    id:"permission-label",
    type:"text",
    minLength: 1,
-   maxLength: 35
+   maxLength: 35,
+   
   }
  },
  category : {
@@ -31,7 +32,8 @@ let UISchema = {
   attributes: {
    name: "category",
    id: "product_category",
-   defaultValue:"WineID" //default selected value
+   defaultValue:"WineID", //default selected value
+   
   },
   
   options: [ //required if el = "select"
@@ -42,6 +44,8 @@ let UISchema = {
  }
 }
 
+UISchema.label.attributes.style = {width: String(UISchema.label.attributes.maxLength) + 'em'}
+
 
 storiesOf('EForm', module)
-  .add('Show Sample Entity: "Product"', () => <EForm UISchema={UISchema}/>);
+  .add('Show Sample Entity: "Product"', () => <EForm UISchema={UISchema} type="adder" onSave={()=>{}}/>);

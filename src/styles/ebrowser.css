@@ -1,0 +1,80 @@
+.ebrowser {
+ padding: .5em;
+ font-family: sans-serif;
+ color:#727976;
+}
+
+.ebrowser #table-container{
+ position:relative;
+ overflow: hidden;
+ width:98%;
+}
+
+.ebrowser #table-wrapper{
+ overflow-x: auto;
+ width: 95%;
+}
+
+.ebrowser table{
+ min-width: 95%;
+ border-collapse: collapse;
+}
+
+.ebrowser .ebrowser-title{
+ display: flex;
+ justify-content: space-between;
+}
+
+.ebrowser #ebrowser-action-add{
+ text-decoration: none;
+ color: #15a915;
+}
+
+.ebrowser table caption {
+  text-align: left;
+  font-size: medium;
+  color: #727976;
+  font-weight: bold;
+  margin-bottom: .3em;
+}
+
+.ebrowser table tbody tr{
+ border-bottom: 1px solid #eef1f1;
+}
+.ebrowser table tbody tr:hover{
+ background-color:rgb(211, 235, 209);
+ /* color:white; */
+}
+
+.ebrowser thead{
+ background-color:#f3f4f9;
+ color:#312f2f;
+}
+/* redundant to include action header  */
+.ebrowser thead th {
+ background-color:#f3f4f9;
+}
+
+.ebrowser table th,td{
+ text-align:left;
+ padding: .5em;
+}
+
+.ebrowser table td{
+ font-size: 12px;
+}
+
+.ebrowser .ebrowser-action{
+ text-decoration: none;
+ padding:.5em;
+ color:black;
+}
+
+.ebrowser .action-edit{
+ background-color:#b2d0ef;
+ margin-right:.4em;
+}
+
+.ebrowser .action-delete{
+ background-color:#f16f6f;
+}
