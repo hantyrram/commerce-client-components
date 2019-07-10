@@ -28,7 +28,7 @@
     "babel-loader": "^8.0.5",
     "storybook": "^1.0.0",
     "storybook-react-router": "^1.0.5",
-    "webpack":"^4.28.0"
+    "webpack":"4.28.0"
   },
   "dependencies": {
     "@material-ui/core": "^4.1.3",

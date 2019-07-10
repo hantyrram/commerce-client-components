@@ -34,19 +34,23 @@ const onDelete = (entity)=>{
    console.log('Deleting');
    return new Promise((res,rej)=>{
       let t = setTimeout(()=>{
-         rej(true);
+         res(true);
          clearTimeout(t);
       },5000);
    });
 }
 
+const innerEBrowserOnSelect = (selectedEntities)=>{
+   //save this,
+   console.log(selectedEntities);
+}
 const actions = [
    {
-      name : 'edit'
+      type : 'select'
    },
-   {
-      name: 'delete'
-   }
+   // {
+   //    name: 'delete'
+   // }
 ]
 
 storiesOf('EBrowser', module)
@@ -55,13 +59,25 @@ storiesOf('EBrowser', module)
          uischema={ProductUISchema}
          entities={products} 
          entityIdentifier='name'
-         actionsProvider={actionsProvider}
          onRead={onRead} 
          onAdd={onAdd}
+         adderType="modal"
+         adderModalTitle="This Will Be Added to permission"
+         adderModalContent={()=>{
+            return <EBrowser actions={[{type:'select'}]} entities={products} uischema={ProductUISchema} onSelect={innerEBrowserOnSelect}/>
+            }
+         }
+         adderModalActions={
+            [<button>Add Permission To Admin</button>]
+         }
+        
          onEdit={onEdit}
          onDelete={onDelete}
          searchable
          actions={actions}
+         onSelect={(selectedEntities)=>{
+            console.log(JSON.stringify(selectedEntities));
+         }}
          // maxRowPerPage
          // maxRowExceeded
          searchableFields={searchableFields}

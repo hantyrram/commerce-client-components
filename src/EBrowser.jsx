@@ -4,6 +4,10 @@ import styled from 'styled-components';
 import DeleteIcon from '@material-ui/icons/DeleteSharp';
 import EditIcon from '@material-ui/icons/Edit';
 import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import IconButton from '@material-ui/core/IconButton';
@@ -11,6 +15,7 @@ import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
 import './EBrowser.css';
 
+//ok
 const ComponentContainer = styled.div`
    padding: 1em;
 `;
@@ -53,7 +58,6 @@ const ThFixed = styled(Th)`
  position:absolute;
  right: 0px;
  min-width:8%;
- background-color:white;
  box-sizing:border-box; 
  text-align:center;
 `;
@@ -72,6 +76,7 @@ const TdFixed = styled(Td)`
  position:absolute;
  right: 0px;
  min-width:8%;
+ height:inherit;
  border-top:none;
  background-color:white;
  box-sizing:border-box; 
@@ -115,7 +120,43 @@ const rowDeletingStyle = {
    backgroundColor: "#fdeaea",
 }
 
+const StatusBar = styled.div`
+   font-style: italic;
+   color: grey;
+   border: none;
+   text-align: left;
+`;
 
+const ActionButton = styled.button`
+   height:inherit;
+   padding:0;
+   margin:0;
+`;
+
+function AdderModal(props){
+   const [open,setOpen] = useState(false);
+   const Content = props.content;
+   const onCloseHandler = (e)=>{
+      setOpen(false);
+   }
+
+   const trigger = (e)=>{
+      setOpen(true);
+   }
+
+   return(
+      <React.Fragment>
+         <Button size="small" style={{borderRadius:"50%",color:"green"}} onClick={trigger} onClick={trigger}><AddIcon /></Button> 
+         <Dialog open={open} onClose={onCloseHandler}>
+            <DialogTitle>{props.title}</DialogTitle>
+            <DialogContent>
+               <Content />
+            </DialogContent>
+            <DialogActions>{props.actions.map(a=>a)}</DialogActions>
+         </Dialog>
+      </React.Fragment>
+   )
+}
 
 /**
  * A Search component for the EBrowser.
@@ -172,6 +213,7 @@ function EBrowserSearch({searchableFields,data,onResult}){
 function TableHeader({columnNames,withActionColumn,actionColumnWidth,numbered}){
    return(
       <thead>
+         <tr>
          {
             numbered ? <Th>#</Th> : null
          }
@@ -179,10 +221,30 @@ function TableHeader({columnNames,withActionColumn,actionColumnWidth,numbered}){
             columnNames.map((col,i)=> <Th key={i}>{col}</Th>)
          }
          { withActionColumn ?<ThFixed className="ThFixed" colSpan={actionColumnWidth || 2}>Action</ThFixed> : null}
+         </tr>
      </thead>     
    )
 }
 
+function Status({text,timeout}){
+   let t = timeout || 5;
+   let [counter,setCounter] = useState(t);
+
+   let i = setTimeout(()=>{
+      if(counter !== 0){
+         setCounter(counter - 1);
+         return;
+      }
+      clearTimeout(i);
+   },1000);
+
+   useEffect(()=>{
+      setCounter(t);
+   },[text]);
+   return(
+      counter && text? <StatusBar>{`${text} `}</StatusBar>: null
+   )
+}
 /**
  * An entity browser displays a list of entities.
  * 
@@ -190,11 +252,15 @@ function TableHeader({columnNames,withActionColumn,actionColumnWidth,numbered}){
  * @version 0.0.1
  */
 function EBrowser(props){
+   //reducer action types
    const ACTION_TYPE = {
       DELETE: 'delete',
       ADD: 'add',
       EDIT: 'edit',
-      SEARCH: 'search'
+      SEARCH: 'search',
+      CHANGE_STATUS: 'change_statusText',
+      SELECT: 'select',
+      DESELECT: 'deselect' 
    }
    //maxRowExceededBehaviour enum
    const MREB = {
@@ -208,7 +274,9 @@ function EBrowser(props){
          props.maxRowExceededBehaviour : MREB.SCROLL;
    let pageCount = 1;   
    //maxRowPerPage prop value or the length of the entities array by default
-   let maxRowPerPage = props.maxRowPerPage || props.entities.length; 
+   let maxRowPerPage = props.maxRowPerPage || (
+      props.entities instanceof Array? props.entities.length : 0
+   ); 
 
    //compute # of pages
    if(maxRowExceededBehaviour === MREB.PAGINATE && props.entities.length > 0){
@@ -217,23 +285,47 @@ function EBrowser(props){
       }
    }
 
+
    //setting up initial state
    let initialState = {
-   entities: props.entities,
+   entities: props.entities instanceof Array? props.entities: [],
    searchResult: [],
    searching: false,
    maxRowExceededBehaviour,
    pageCount,
-   currentPage:1
+   currentPage:1,
+   statusText: null,
+   status: null,
+   // selectedEntities default undefined
   }
 
   let [state, dispatch] = useReducer((state,action)=>{
-   switch(action.type){
+   if(state.statusText && action.type !== ACTION_TYPE.CHANGE_STATUS){
+      //always reset statusText
+      state.statusText = null;
+   }
+   switch(action.type){      
+      case ACTION_TYPE.SELECT: {
+         let selectedEntities = [];
+         if(state.selectedEntities){
+            selectedEntities = Object.assign([],[...state.selectedEntities]);
+         }
+         //indexOnState is the original index of the entity from state.entities;
+         let newLength = selectedEntities.push({entity: action.entity, indexOnState: action.entityIndex, rowId: action.rowId});
+         action.onAddToSelectedEntities(newLength -1);
+         return { ...state, selectedEntities };
+      }
+      case ACTION_TYPE.DESELECT: {
+         let selectedEntities = Object.assign([],[...state.selectedEntities]);
+         selectedEntities.splice(action.selectedEntityIndex,1);
+         return { ...state, selectedEntities };
+      }
+      case ACTION_TYPE.BROWSE: return { ...state, entities : action.entities  }
       case ACTION_TYPE.SEARCH: return { ...state, searchResult : action.searchResult  }
-      
       case ACTION_TYPE.DELETE: {
          //delete failed,reverse
          let splicedEntities = Object.assign([],[...state.entities]);
+         console.log(splicedEntities);
          if(action.reversal){
             splicedEntities.splice(action.entityIndex,0,action.entity);//insert on original position
          }else{
@@ -242,7 +334,10 @@ function EBrowser(props){
          return {...state, entities: splicedEntities};
       }
       case ACTION_TYPE.ADD : {
-         return { ...state, entities: [ action.entity, ...state.entities ] }//push 
+         return { ...state, entities: [ action.entity, ...state.entities ] }//push
+      }
+      case ACTION_TYPE.CHANGE_STATUS : {
+         return { ...state, statusText: action.statusText, status:action.status}
       }
       default:  return {...state}
    }
@@ -254,19 +349,21 @@ function EBrowser(props){
 
  
    function initOnReadActionHandler(){
-   if(props.onRead){
+      console.log(props.onRead);
+      if(!props.onRead) return;
+      
       let rows = document.getElementsByTagName("tr");
       for(let row of rows){
          row.addEventListener('click',function(e){
          if(e.eventPhase === Event.CAPTURING_PHASE && e.target.tagName.toLowerCase() === 'td'){
          if(e.target.className.includes("ebrowser-entity-data")){
                let {entity}= JSON.parse(row.attributes["row-entity"].value);
+               console.log(props.onRead);
                props.onRead(entity);
                e.stopImmediatePropagation();
          }
          }
          },true);
-      }
       }
    }
 
@@ -278,25 +375,49 @@ function EBrowser(props){
    /**Intercepts click event of the delete button, serves as a proxy to props.onDelete*/
    const onDeleteClickHandler = async (entity,index,rowId,e)=>{
       //cache entity for dispatching DELETE action with reversal
+      console.log(`index`,index);
       let cacheEntity = Object.assign({},entity); 
       dispatch({type: ACTION_TYPE.DELETE, entityIndex:index});//delete immediately
+      dispatch({type: ACTION_TYPE.CHANGE_STATUS, statusText:'deleting...'});//delete immediately
       try {
-         await props.onDelete(entity);
+         let ok = await props.onDelete(entity);
+         if(ok){
+            dispatch({type: ACTION_TYPE.CHANGE_STATUS, statusText:'deletion done!'});//delete immediately
+         }else{
+            dispatch({ type:ACTION_TYPE.DELETE,entityIndex:index, reversal:true, entity: cacheEntity });   
+         }
+         
       } catch (error) {
          console.log('Error caught deleting: ',entity);
          dispatch({ type:ACTION_TYPE.DELETE,entityIndex:index, reversal:true, entity: cacheEntity });
+         
       }
    }
+
+   /** Check boxes onchange handler*/
+   const selectChangeHandler = (entity,entityIndex,rowId,e)=>{
+      e.persist();//persist event, needed on onAddToSelectedEntities callback.
+
+      if(e.target.checked){
+         dispatch({ type: ACTION_TYPE.SELECT, entity, entityIndex, onAddToSelectedEntities : (index)=> {
+            e.target.value = index;
+         } });
+         
+      }else{
+         dispatch({type: ACTION_TYPE.DESELECT,selectedEntityIndex: e.target.value});
+      }
+      
+   } 
 
 
 
    const renderRows = ()=>{
    let activeEntities = state.searchResult.length > 0? state.searchResult : state.entities;
-   return activeEntities && activeEntities.length> 0 ? activeEntities.map((entity,index)=> {
-      let rowId = `ebrowser-row-${index}`; //tr's id attribute
+   return activeEntities && activeEntities.length> 0 ? activeEntities.map((entity,entityIndex)=> {
+      let rowId = `ebrowser-row-${entityIndex}`; //tr's id attribute
       return ( //mapped
-         <tr id={rowId} className="ebrowser-row" key={index} row-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
-         <Td className="ebrowser-entity-data">{index + 1}</Td> 
+         <tr id={rowId} className="ebrowser-row" key={entityIndex} row-entity={JSON.stringify({entity})}>{/** Row is clickable if there is onRead handler else default = empty function*/}
+         <Td className="TdData ebrowser-entity-data">{entityIndex + 1}</Td> 
          {
             Object.getOwnPropertyNames(props.uischema).map((uiSchemaProp,i)=>{
                let transform = props.uischema[uiSchemaProp].transform;
@@ -318,10 +439,18 @@ function EBrowser(props){
             <DummyTd className="DummyTd" /> 
             <TdFixed className="TdFixed">
                {
-               props.actions.map(action => {
+               props.actions.map((action,actionIndex) => {
 
-               switch(action.name){
+               switch(action.type){
+                  case 'select' : {
+                     return <input type="checkbox" onChange={selectChangeHandler.bind(null,entity,entityIndex,rowId)}/>
+                  }
+
                   case 'edit': {
+                     if(typeof action.ui === 'string'){
+                        return <ActionButton color="secondary">{action.ui}</ActionButton>
+                     }
+
                      if(action.ui){
                         let UI = action.ui;
                         return <UI onClick={onEditClickHandler.bind(null,entity)} />;
@@ -329,13 +458,17 @@ function EBrowser(props){
                      return <StyledEditIcon onClick={onEditClickHandler.bind(null,entity)}/>;
                   }
                   case 'delete': {
+                     if(typeof action.ui === 'string'){
+                        return <ActionButton color="secondary" onClick={onDeleteClickHandler.bind(null,entity,entityIndex,rowId)}>{action.ui}</ActionButton>
+                     }
+
                      if(action.ui){
                         let UI = action.ui;
-                        return <UI onClick={onDeleteClickHandler.bind(null,entity,index,rowId)} />;
+                        return <UI onClick={onDeleteClickHandler.bind(null,entity,entityIndex,rowId)} />;
                      }
-                     return <StyledDeleteIcon onClick={onDeleteClickHandler.bind(null,entity,index,rowId)}/>;
+                     return <StyledDeleteIcon key={actionIndex} onClick={onDeleteClickHandler.bind(null,entity,entityIndex,rowId)}/>;
                   }
-                  default : return <button>{action.name}</button>;
+                  default : return <Button color="primary">{action.ui}</Button>;
                   }
                })
                }
@@ -354,67 +487,133 @@ function EBrowser(props){
    * Modify Fixed Column / Action Column. 
    */
   const modifyActionColumn = ()=>{
-   let tdFixed = document.getElementsByClassName("TdFixed");
+   // let tdFixed = document.getElementsByClassName("TdFixed");
+
+      let dataTds = document.getElementsByClassName("TdData");
+      
+
+      if(dataTds && dataTds.length > 0){
+         let computedStyleOfTd = window.getComputedStyle(dataTds[0]); //get a td sample
+       
+         let fixedTds = document.getElementsByClassName("TdFixed");
+         let actionTh = document.getElementsByClassName("ThFixed")[0];
+        
+         for(let fTd of fixedTds){
+            fTd.style.minHeight = computedStyleOfTd.height;
+         }
+         let computedStyleOfFixedTds = window.getComputedStyle(fixedTds[0]);//get a TdFixed sample
+         actionTh.style.width = computedStyleOfFixedTds.width;
+         //DummyTd is the extra cell behind the positioned action td, this will be the hidden td on scroll
+         //instead of a td with entity data on it
+         for(let dTd of document.getElementsByClassName("DummyTd")){
+            dTd.style.minWidth = computedStyleOfFixedTds.width;//set the dummy td to the width of the TdFixed
+         }
+      
+      }
    
-   if(tdFixed.length > 0){
-    //set the dummy cells to the computed value of the fixed column width;
-    let computedWidthOfTdElement = window.getComputedStyle(tdFixed[0]).width;
+   // if(tdFixed.length > 0){
+   //  //set the dummy cells to the computed value of the fixed column width;
+   //  let computedWidthOfTdElement = window.getComputedStyle(tdFixed[0]).width;
     
-    for(let dTd of document.getElementsByClassName("DummyTd")){
-     dTd.style.minWidth = computedWidthOfTdElement;
-    }
-    //set the height of fixedTd
-    let computedHeightofTdElement = window.getComputedStyle(tdFixed[0]).height;
-    for(let fTd of document.getElementsByClassName("TdFixed")){
-     fTd.style.height = computedHeightofTdElement;
-    }
-   }
+   //  for(let dTd of document.getElementsByClassName("DummyTd")){
+   //   dTd.style.minWidth = computedWidthOfTdElement;
+   //  }
+   //  //set the height of fixedTd
+   //  let computedHeightofTdElement = window.getComputedStyle(tdFixed[0]).height;
+   //  for(let fTd of document.getElementsByClassName("TdFixed")){
+   //   fTd.style.height = computedHeightofTdElement;
+   //  }
+
+
+   // }
   
   }
 
+  const callOnSelectEffect = ()=>{
+     if(props.onSelect) props.onSelect(state.selectedEntities);
+  }
+
+  useEffect(callOnSelectEffect);
+
+
   useEffect(()=>{
+   if(props.entities instanceof Promise){
+      dispatch({type: ACTION_TYPE.CHANGE_STATUS, status:'waiting', statusText:'Fetching Entities...'});
+      props.entities.then(e=>{
+         console.log(e);
+         dispatch({type: ACTION_TYPE.BROWSE, entities:e });
+         dispatch({type: ACTION_TYPE.CHANGE_STATUS,statusText:'Entities Received!'});
+      }).catch(e=>{
+         dispatch({type: ACTION_TYPE.BROWSE, entities:[] });
+      });
+   }else{
+      // if(JSON.stringify(state.entities) !== JSON.stringify(props.entities)){
+      //    dispatch({type: ACTION_TYPE.BROWSE, entities:props.entities });
+      // }
+      dispatch({type: ACTION_TYPE.BROWSE, entities:props.entities });
+   }
+     
+   
+  },[]);
+
+  useEffect(()=>{
+   if(props.onRead){
+      initOnReadActionHandler(); 
+   }
+   
    modifyActionColumn();
-   initOnReadActionHandler();
-  });
+   
+  })
   
 
   function onAddClickHandler(e){
-     (async ()=>{
-      let entity = await props.onAdd();
-      dispatch({type: 'ADD', entity });
-     })()
+     //addMode = modal? display modal
+   //   (async ()=>{
+   //    let entity = await props.onAdd();
+   //    dispatch({type: 'ADD', entity });
+   //   })()
   }
 
+  const AdderButton = ()=>{
+     console.log(props.adderUi);
+     if(props.adderType === 'modal'){
+        
+        return <AdderModal content={props.adderModalContent} actions={props.adderModalActions} title={props.adderModalTitle}/>
+     }
+     
+     return null;
+  }
   return(
-   state.entities && state.entities.length > 0 ?
-   <ComponentContainer>
-    <SearchAddPanel>
-      {
-         props.searchable ? 
-            <EBrowserSearch onResult={onSearchResult} data={state.entities} searchableFields={props.searchableFields} /> 
-         : null
-      }
-      {
-         props.onAdd ? 
-            <Button size="small" style={{borderRadius:"50%",color:"green"}} onClick={onAddClickHandler}><AddIcon /></Button> 
-         : null
-      }
-    </SearchAddPanel>
    
-    <TableContainer>
-      <TableWrapper >
-       <Table>
-         <TableHeader columnNames={Object.keys(props.uischema)} numbered withActionColumn={props.actions && props.actions.length > 0}/> 
-         <tbody>
+   <ComponentContainer>
+    { state.entities && state.entities.length > 0 ?
+    <>  
+      <SearchAddPanel>
          {
-            renderRows()
+            props.searchable ? 
+               <EBrowserSearch onResult={onSearchResult} data={state.entities} searchableFields={props.searchableFields} /> 
+            : null
          }
-         </tbody>
-       </Table>
-      </TableWrapper>
-    </TableContainer>
+         <AdderButton />
+      </SearchAddPanel>
+      
+      <TableContainer>
+         <TableWrapper >
+         <Table>
+            <TableHeader columnNames={Object.keys(props.uischema)} numbered withActionColumn={props.actions && props.actions.length > 0}/> 
+            <tbody>
+            {
+               renderRows()
+            }
+            </tbody>
+         </Table>
+         </TableWrapper>
+      </TableContainer>
+    </> :null }
+    {state.statusText ? <Status text={state.statusText}/> : null}
    </ComponentContainer>
-   : null
+
+  
   )
 }
 
@@ -434,7 +633,7 @@ EBrowser.propTypes = {
   * @type {function}
   * @param {Object} entity The entity that will be affected by a particular action.
   */
- actions: PropTypes.func,
+ actions: PropTypes.array,
 
  /*
   * Uses the UISchema's properties index as bases in arranging the columns. Uses labels as column labels, these
@@ -511,6 +710,18 @@ EBrowser.propTypes = {
   * The title of the entity browser table.
   */
  title: PropTypes.string,
+ 
+ /**
+  * Determines that the + or Add button when present will do.
+  * 'inline' means entity can be added inline, a row is inserted on top, with x and check buttons to cancel or save.
+  * 'external' default, means the Adder is an external ui, EBrowser won't care.
+  * 'internal' requires adderUI which will be displayed on top of EBrowser.
+  * 'modal', requireds adderUI which will be displayed as modal.
+  */
+ adderType: PropTypes.oneOf['inline','modal','internal','external'],
+ adderModalTitle: PropTypes.string,
+ adderModalContent: PropTypes.object,
+ adderModalActions: PropTypes.array
 
 }
 
@@ -519,13 +730,30 @@ EBrowser.propTypes = {
  * An object that defines an action that can be peformed on the EBrowser.
  * 
  * @typedef  {Object} EBrowser.action 
- * @property {String} name The action name valid values are 'delete','edit','add'
+ * @property {String} type The action name valid values are 'delete','edit','add' || 'select', 'add'
  * @property {String|React.Component|React.Element|undefined} ui The string or component that the user interacts with. 
  * If value is a string, it is display as simple button without border. If ui is undefined EBrowser will use the 
  * default ui for the given type.
  * 
+ * 
+ * 
  */
 
+ /**
+ * A call back that is one of the property of the ACTION_TYPE.SELECT. This function recieves the index,
+ * of the entity added to the selectedEntities state. This makes DESELECTing the entity from selectedEntities
+ * easier.
+ * 
+ * @typedef  {function} EBrowser~onAddToSelectedEntities
+ * @param {Number} index The index of the entity on the selectedEntities state array.
+ */
 
+ /**
+ * Defines the state of the EBrowser component.
+ * 
+ * @typedef  {Object} EBrowser~state
+ * @property {Array} selectedEntities  An array containing the selected entities, if the 'select' action type
+ * is on.
+ */
 
 export default EBrowser;
